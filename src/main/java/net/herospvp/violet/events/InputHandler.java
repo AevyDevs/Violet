@@ -12,6 +12,7 @@ import com.velocitypowered.api.util.GameProfile;
 import com.velocitypowered.api.util.UuidUtils;
 import net.herospvp.violet.Violet;
 import net.herospvp.violet.commands.players.ReportCommand;
+import net.herospvp.violet.commands.staffer.ControlloCommand;
 import net.herospvp.violet.core.VBank;
 import net.herospvp.violet.core.VPlayer;
 import net.herospvp.violet.core.VStaffer;
@@ -115,20 +116,30 @@ public class InputHandler {
     public void on(PostLoginEvent event) {
         Player player = event.getPlayer();
         VPlayer vPlayer = vBank.get(player);
+        String ip = player.getRemoteAddress().getAddress().getHostAddress(), uuid = player.getUniqueId().toString();
+        long time = System.currentTimeMillis();
 
         if (vPlayer == null) {
             vPlayer = new VPlayer(
                     player.getUsername(),
-                    player.getRemoteAddress().getAddress().getHostAddress(),
-                    player.getUniqueId().toString(),
+                    ip,
+                    uuid,
                     false,
                     player.hasPermission("heros.proxy.staff"),
                     Auth.UNKNOWN,
-                    System.currentTimeMillis(),
+                    time,
                     0L,
                     0L);
             vBank.push(vPlayer);
             vPlayer.setNeedsInsert(true);
+        }
+        else {
+            if (vPlayer.getUuid() == null) {
+                vPlayer.setUuid(uuid);
+            }
+            if (vPlayer.getIp() == null || !vPlayer.getIp().equals(ip)) {
+                vPlayer.setIp(ip);
+            }
         }
 
         if (vPlayer.isBlacklisted()) {
@@ -201,7 +212,9 @@ public class InputHandler {
         vPlayer.setAuthenticated(false);
         vPlayer.setOnline(false);
         vPlayer.updateTotalTime();
+
         ReportCommand.timings.remove(vPlayer);
+        ControlloCommand.playersAndStafferInSS.remove(vPlayer);
 
         if (!vPlayer.isStaffer()) {
             return;

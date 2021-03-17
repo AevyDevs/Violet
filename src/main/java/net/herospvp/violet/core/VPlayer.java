@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 public class VPlayer {
 
     private final String name;
-    private final String ip;
+    private String ip;
     private String uuid;
     private boolean blacklisted, staffer, authenticated, online, needsInsert, needsUpdate, needsDelete;
     private Auth auth;

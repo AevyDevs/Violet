@@ -7,7 +7,6 @@ import com.velocitypowered.api.proxy.Player;
 import net.herospvp.violet.Violet;
 import net.herospvp.violet.core.VBank;
 import net.herospvp.violet.core.VPlayer;
-import net.herospvp.violet.core.VStaffer;
 import net.herospvp.violet.elements.MessageType;
 import net.herospvp.violet.utils.StaticUtils;
 import net.kyori.adventure.text.Component;
@@ -24,12 +23,12 @@ public class ControlloCommand implements SimpleCommand {
     private final Violet violet;
     private final VBank vBank;
 
-    private final Map<VPlayer, VStaffer> playersAndStafferInSS;
+    public static Map<VPlayer, VPlayer> playersAndStafferInSS;
 
     public ControlloCommand(Violet violet) {
         this.violet = violet;
         this.vBank = violet.getVBank();
-        this.playersAndStafferInSS = new HashMap<>();
+        playersAndStafferInSS = new HashMap<>();
 
         CommandManager commandManager = violet.getCommandManager();
         CommandMeta commandMeta = commandManager.metaBuilder("controllo").aliases("ss", "freeze").build();
@@ -50,7 +49,7 @@ public class ControlloCommand implements SimpleCommand {
         }
 
         VPlayer target = vBank.get(args[1]);
-        if (target == null || !target.isOnline()) {
+        if (target == null || !target.isOnline() || !target.isAuthenticated()) {
             vPlayer.write("controllo", "Il player non e' online", MessageType.ERROR);
             return;
         }
@@ -58,19 +57,24 @@ public class ControlloCommand implements SimpleCommand {
         switch (args[0].toLowerCase()) {
             case "start": {
 
-                VStaffer temp = playersAndStafferInSS.get(target);
+                VPlayer possibleStaffer = playersAndStafferInSS.get(target);
 
                 if (playersAndStafferInSS.containsKey(target)) {
-                    vPlayer.write("controllo", "Il player e' sotto controllo da parte di: " + temp.getName(), MessageType.ERROR);
+                    vPlayer.write("controllo", "Il player e' sotto controllo da parte di: " + possibleStaffer.getName(), MessageType.ERROR);
                     return;
                 }
 
-                target.write(Component.text("\n\nSei stato messo sotto controllo da parte di " + temp
+                vBank.getVStaffers().parallelStream()
+                        .forEach(p -> p.write(Component.text("\n" + target.getName()
+                                + " e' stato messo sotto controllo da " + vPlayer.getName() + "\n").color(NamedTextColor.YELLOW)));
+
+                target.write(Component.text("\n\nSei stato messo sotto controllo da parte di " + vPlayer.getName()
                         + "! Perpiacere, fornisci i dati AnyDesk allo staffer in questione.")
                         .color(NamedTextColor.RED));
-
                 target.write(Component.text("Non hai AnyDesk? Scaricalo da: https://www.anydesk.com/")
                         .color(NamedTextColor.YELLOW));
+
+                playersAndStafferInSS.put(target, vPlayer);
 
                 Player player = StaticUtils.findPlayer(target), staffer = StaticUtils.findPlayer(vPlayer);
                 if (staffer == null) {
@@ -91,12 +95,16 @@ public class ControlloCommand implements SimpleCommand {
                     return;
                 }
 
-                VStaffer temp = playersAndStafferInSS.get(target), vStaffer = vBank.getStaffer(vPlayer);
+                VPlayer possibleStaffer = playersAndStafferInSS.get(target);
 
-                if (!temp.equals(vStaffer)) {
-                    vPlayer.write("controllo", "Il player e' sotto controllo da parte di " + temp.getName(), MessageType.ERROR);
+                if (!possibleStaffer.equals(vPlayer)) {
+                    vPlayer.write("controllo", "Il player e' sotto controllo da parte di " + possibleStaffer.getName(), MessageType.ERROR);
                     return;
                 }
+
+                vBank.getVStaffers().parallelStream()
+                        .forEach(p -> p.write(Component.text("\n" + possibleStaffer.getName()
+                                + " ha terminato il controllo su " + target.getName() + "\n").color(NamedTextColor.YELLOW)));
 
                 target.write("controllo", "Controllo terminato, grazie per la pazienza!", MessageType.INFO);
 
@@ -107,12 +115,13 @@ public class ControlloCommand implements SimpleCommand {
                     return;
                 }
                 staffer.createConnectionRequest(StaticUtils.findServer("lobby-3")).connect();
+                violet.getJedisThread().getLobby().offer(vPlayer);
 
                 if (player == null) {
                     return;
                 }
                 player.createConnectionRequest(StaticUtils.findServer("lobby-3")).connect();
-
+                violet.getJedisThread().getLobby().offer(target);
                 break;
             }
             default: {
