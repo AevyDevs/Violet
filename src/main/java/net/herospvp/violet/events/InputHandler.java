@@ -180,7 +180,7 @@ public class InputHandler {
         }
 
         if (!rank.equals(vStaffer.getRank())) {
-            if (vStaffer.getRank().equals(Rank.NONE)) {
+            if (rank.equals(Rank.NONE)) {
                 vStaffer.setNeedsDelete(true);
                 vPlayer.setStaffer(false);
                 vBank.remove(vStaffer);
