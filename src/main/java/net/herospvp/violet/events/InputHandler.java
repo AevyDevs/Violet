@@ -6,6 +6,8 @@ import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.GameProfileRequestEvent;
+import com.velocitypowered.api.event.player.ServerConnectedEvent;
+import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.util.GameProfile;
@@ -202,6 +204,18 @@ public class InputHandler {
                             MessageType.WARNING)
             );
         }).delay(1, TimeUnit.SECONDS).schedule();
+    }
+
+    @Subscribe (order = PostOrder.LAST)
+    public void on(ServerConnectedEvent event) {
+        VPlayer vPlayer = vBank.get(event.getPlayer());
+        if (vPlayer == null || !vPlayer.isAuthenticated()) {
+            return;
+        }
+
+        if (event.getServer().getServerInfo().getName().contains("lobby-")) {
+            violet.getJedisThread().getLobby().offer(vPlayer);
+        }
     }
 
     @Subscribe (order = PostOrder.LAST)

@@ -75,10 +75,6 @@ public class SendCommand implements SimpleCommand {
             return;
         }
 
-        if (registeredServer.getServerInfo().getName().contains("lobby")) {
-            violet.getJedisThread().getLobby().offer(vPlayer);
-        }
-
         player.createConnectionRequest(registeredServer).connect();
         vPlayer.write("send", "Connettendo " + player.getUsername() + " a: " + server, MessageType.INFO);
     }

@@ -44,7 +44,6 @@ public class HubCommand implements SimpleCommand {
             return;
         }
 
-        violet.getJedisThread().getLobby().offer(vPlayer);
         player.createConnectionRequest(StaticUtils.findServer("lobby-2")).connect();
     }
 

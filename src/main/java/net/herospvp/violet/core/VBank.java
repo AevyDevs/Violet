@@ -36,7 +36,7 @@ public class VBank {
 
     public void startup() {
         musician.offer((connection, instrument) -> {
-            PreparedStatement preparedStatement = null;
+            PreparedStatement preparedStatement = null, deleteStatement = null;
             ResultSet resultSet = null;
             try {
                 preparedStatement = connection.prepareStatement(
@@ -59,19 +59,36 @@ public class VBank {
                 );
                 resultSet = preparedStatement.executeQuery();
 
+                deleteStatement = connection.prepareStatement(
+                        "DELETE FROM " + players.getTable() + " WHERE NAME = ?;"
+                );
+
                 while (resultSet.next()) {
+                    String name = resultSet.getString(1);
+                    boolean blacklisted = resultSet.getBoolean(4), staffer = resultSet.getBoolean(5);
+                    Auth auth = Auth.valueOf(resultSet.getString(6));
+                    long totalTime = resultSet.getLong(9);
+
+                    if (totalTime < 60000 && auth.equals(Auth.UNKNOWN) && !blacklisted && !staffer) {
+                        deleteStatement.setString(1, name);
+                        deleteStatement.addBatch();
+                        continue;
+                    }
+
                     vPlayers.add(new VPlayer(
-                            resultSet.getString(1),
+                            name,
                             resultSet.getString(2),
                             resultSet.getString(3),
-                            resultSet.getBoolean(4),
-                            resultSet.getBoolean(5),
-                            Auth.valueOf(resultSet.getString(6)),
+                            blacklisted,
+                            staffer,
+                            auth,
                             resultSet.getLong(7),
                             resultSet.getLong(8),
-                            resultSet.getLong(9)
+                            totalTime
                     ));
                 }
+
+                deleteStatement.executeBatch();
 
                 preparedStatement = connection.prepareStatement(
                         staffers.createTable(new String[]{
@@ -103,6 +120,7 @@ public class VBank {
             } finally {
                 instrument.close(resultSet);
                 instrument.close(preparedStatement);
+                instrument.close(deleteStatement);
             }
         });
         violet.setCanJoin(true);
@@ -174,16 +192,7 @@ public class VBank {
                         }, "name")
                 );
 
-                deleteStatement = connection.prepareStatement(
-                        "DELETE FROM " + players.getTable() + " WHERE NAME = ?;"
-                );
-
                 for (VPlayer player : vPlayers) {
-
-                    if (player.getTotalTime() <= 60000 && player.isUnknown() && !player.isBlacklisted()) {
-                        deleteStatement.setString(1, player.getName());
-                        deleteStatement.addBatch();
-                    }
 
                     if (player.isNeedsInsert()) {
                         insertStatement.setString(1, player.getName());
@@ -215,7 +224,6 @@ public class VBank {
 
                 insertStatement.executeBatch();
                 updateStatement.executeBatch();
-                deleteStatement.executeBatch();
 
             } catch (Exception e) {
                 e.printStackTrace();

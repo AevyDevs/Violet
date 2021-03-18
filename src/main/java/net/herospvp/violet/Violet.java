@@ -20,6 +20,7 @@ import net.herospvp.database.lib.items.Notes;
 import net.herospvp.violet.commands.players.*;
 import net.herospvp.violet.commands.staffer.*;
 import net.herospvp.violet.core.VBank;
+import net.herospvp.violet.core.VPlayer;
 import net.herospvp.violet.core.threads.JedisThread;
 import net.herospvp.violet.events.ChatHandler;
 import net.herospvp.violet.events.InputHandler;
@@ -38,7 +39,7 @@ import java.util.logging.Logger;
 @Plugin(
         id = "violet",
         name = "Violet",
-        version = "1.0.2-SNAPSHOT",
+        version = "1.0.3-SNAPSHOT",
         url = "https://www.herospvp.net",
         description = "Addons for VelocityPowered",
         authors = { "Sorridi" }
