@@ -64,13 +64,13 @@ public class StaffChatCommand implements SimpleCommand {
     }
 
     @Override
-    public boolean hasPermission(Invocation invocation) {
-        return invocation.source().hasPermission("heros.proxy.staffchat");
+    public CompletableFuture<List<String>> suggestAsync(Invocation invocation) {
+        return CompletableFuture.supplyAsync(() -> Collections.singletonList("notify"));
     }
 
     @Override
-    public CompletableFuture<List<String>> suggestAsync(Invocation invocation) {
-        return CompletableFuture.supplyAsync(() -> Collections.singletonList("notify"));
+    public boolean hasPermission(Invocation invocation) {
+        return invocation.source().hasPermission("heros.proxy.staffchat");
     }
 
 }

@@ -75,7 +75,7 @@ public class SendCommand implements SimpleCommand {
             return;
         }
 
-        if (registeredServer.getServerInfo().getName().contains("lobby-")) {
+        if (registeredServer.getServerInfo().getName().contains("lobby")) {
             violet.getJedisThread().getLobby().offer(vPlayer);
         }
 

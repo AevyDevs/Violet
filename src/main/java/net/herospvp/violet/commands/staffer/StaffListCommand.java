@@ -35,9 +35,9 @@ public class StaffListCommand implements SimpleCommand {
         StringBuilder stringBuilder = new StringBuilder();
 
         AtomicInteger i = new AtomicInteger();
-        vBank.getVPlayers().parallelStream()
+        vBank.getVStaffers().parallelStream()
                 .filter(
-                        p -> vBank.hasPerms(p, "heros.proxy.stafflist")
+                        VPlayer::isOnline
                 ).forEach(
                         p -> {
                             i.getAndIncrement();

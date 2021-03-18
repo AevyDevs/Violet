@@ -75,4 +75,9 @@ public class StatisticsCommand implements SimpleCommand {
         });
     }
 
+    @Override
+    public boolean hasPermission(Invocation invocation) {
+        return invocation.source().hasPermission("heros.proxy.statistics");
+    }
+
 }

@@ -52,7 +52,7 @@ public class BlacklistCommand implements SimpleCommand {
                 );
 
                 if (list.isEmpty()) {
-                    vPlayer.write("blacklist", "Non c'e' nessuno in blacklist... PER ORA", MessageType.INFO);
+                    vPlayer.write("blacklist", "Non c'e' nessuno in blacklist... PER ORA", MessageType.WARNING);
                     return;
                 }
 
@@ -127,7 +127,7 @@ public class BlacklistCommand implements SimpleCommand {
 
             String[] args = invocation.arguments();
 
-            if (args.length == 1) {
+            if (args.length <= 1) {
                 return StaticUtils.argsTabComplete(Arrays.asList("add", "remove", "list"), args[0]);
             }
 

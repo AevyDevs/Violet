@@ -57,7 +57,7 @@ public class ReportCommand implements SimpleCommand {
         long time = System.currentTimeMillis();
 
         if (timings.get(vPlayer) > time) {
-            vPlayer.write("report", "Devi aspettare un po' prima di poter fare un nuovo report", MessageType.ERROR);
+            vPlayer.write("report", "Devi aspettare un po' prima di poter fare un nuovo report", MessageType.WARNING);
             return;
         }
         timings.replace(vPlayer, time + 120000);
@@ -67,7 +67,10 @@ public class ReportCommand implements SimpleCommand {
             if (i == 0) {
                 continue;
             }
-            stringBuilder.append(args[i]).append(" ");
+            stringBuilder.append(args[i]);
+            if (i == args.length - 1) {
+                stringBuilder.append(" ");
+            }
         }
 
         String server = StaticUtils.getServerName(vPlayer);

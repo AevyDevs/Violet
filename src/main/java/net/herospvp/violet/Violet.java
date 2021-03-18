@@ -28,6 +28,7 @@ import net.herospvp.violet.utils.StaticUtils;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,7 @@ import java.util.logging.Logger;
 @Plugin(
         id = "violet",
         name = "Violet",
-        version = "1.0.1-SNAPSHOT",
+        version = "1.0.2-SNAPSHOT",
         url = "https://www.herospvp.net",
         description = "Addons for VelocityPowered",
         authors = { "Sorridi" }
@@ -81,7 +82,7 @@ public class Violet {
         if (!file.exists()) {
             TomlWriter tomlWriter = new TomlWriter.Builder().build();
 
-            Map<String, Object> main = new HashMap<>(), mysql = new HashMap<>(), redis = new HashMap<>();
+            Map<String, Object> main = new HashMap<>(), mysql = new HashMap<>(), redis = new HashMap<>(), words = new HashMap<>();
 
             redis.put("ip", "localhost");
             redis.put("password", "password");
@@ -95,8 +96,17 @@ public class Violet {
             mysql.put("pool-size", 12);
             mysql.put("driver", "org.mariadb.jdbc.Driver");
 
+            words.put("words",
+                    Arrays.asList("coglione", "testa di cazzo", "madre morta",
+                            "puttana", "kys", "hang yourself", "ucciditi", "troia",
+                            "zoccola", "minorato", "ritardato", "frocio", "ricchione",
+                            "travione", "finocchio", "ammazzati", "impiccati", "datti fuoco"
+                    )
+            );
+
             main.put("redis", redis);
             main.put("mysql", mysql);
+            main.put("blacklisted-words", words);
 
             tomlWriter.write(main, file);
         }
@@ -119,7 +129,7 @@ public class Violet {
 
         // events
         new InputHandler(this);
-        new ChatHandler(this);
+        new ChatHandler(this, toml.getList("blacklisted-words.words"));
 
         // player commands
         new HubCommand(this);
@@ -141,6 +151,7 @@ public class Violet {
         new ForceSaveCommand(this);
         new ControlloCommand(this);
         new BlacklistCommand(this);
+        new GotoCommand(this);
 
         this.jedisThread = new JedisThread(this, toml.getString("redis.ip"), toml.getString("redis.password"));
 

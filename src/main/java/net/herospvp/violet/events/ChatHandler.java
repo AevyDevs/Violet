@@ -30,10 +30,13 @@ public class ChatHandler {
     private final Map<Player, Long> commandTimings, messageTimings;
     private final List<String> whitelistedCommands;
 
-    public ChatHandler(Violet violet) {
+    private final List<String> blacklistedWords;
+
+    public ChatHandler(Violet violet, List<String> words) {
         this.vBank = violet.getVBank();
         this.commandTimings = new HashMap<>();
         this.messageTimings = new HashMap<>();
+        this.blacklistedWords = words;
         this.whitelistedCommands = Arrays.asList("login", "l", "register", "reg");
         violet.getServer().getEventManager().register(violet, this);
     }
@@ -120,6 +123,19 @@ public class ChatHandler {
             return;
         }
         messageTimings.replace(player, time);
+
+        String string = blacklistedWords.parallelStream()
+                .filter(
+                        w -> event.getMessage().contains(w)
+                ).findFirst().orElse(null);
+
+        if (string == null) {
+            return;
+        }
+
+        vPlayer.write("proxy", "Mi spiace, non puoi usare queste parole sul server, " +
+                "eludere questa restrizione comporta il mute di 12 ore!", MessageType.WARNING);
+        event.setResult(PlayerChatEvent.ChatResult.denied());
     }
 
 }
